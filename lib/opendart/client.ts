@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { checkResponse, OpenDartNetworkError } from "./errors";
 
 const BASE_URL = "https://opendart.fss.or.kr/api";
@@ -7,22 +8,26 @@ const DEFAULT_RETRIES = 2;
 const BINARY_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000, 4000];
 
-let sessionApiKey: string | undefined;
+// The connection URL's ?opendart_key= must stay scoped to its own request.
+// A module-level variable outlives the request on a reused (Fluid compute)
+// instance, so one user's key would serve another user's tool calls, and
+// concurrent requests would overwrite each other's key.
+const requestContext = new AsyncLocalStorage<{ apiKey?: string }>();
 
-export function setSessionApiKey(key: string): void {
-  sessionApiKey = key;
+export function runWithRequestApiKey<T>(apiKey: string | null | undefined, fn: () => T): T {
+  return requestContext.run({ apiKey: apiKey || undefined }, fn);
 }
 
-export function getSessionApiKey(): string | undefined {
-  return sessionApiKey;
+export function getRequestApiKey(): string | undefined {
+  return requestContext.getStore()?.apiKey;
 }
 
 export function resolveApiKey(toolParamKey?: string): string {
-  const key = toolParamKey || sessionApiKey || process.env.OPENDART_API_KEY;
+  const key = toolParamKey || getRequestApiKey() || process.env.OPENDART_API_KEY;
   if (!key) {
     throw new Error(
-      "[OpenDART] API key required. Get one at https://opendart.fss.or.kr/ and call set_api_key tool first. / " +
-      "API 키가 필요합니다. https://opendart.fss.or.kr/ 에서 발급 후 set_api_key 도구를 먼저 호출하세요."
+      "[OpenDART] API key required. Get one at https://opendart.fss.or.kr/ and append ?opendart_key=YOUR_KEY to the MCP server URL, or pass api_key to the tool. / " +
+      "API 키가 필요합니다. https://opendart.fss.or.kr/ 에서 발급 후 MCP 서버 URL 끝에 ?opendart_key=발급키 를 붙이거나, 도구의 api_key 인자로 넘기세요."
     );
   }
   return key;

@@ -31,7 +31,7 @@ API를 발급받아 Claude 커스텀 커넥터로 바로 연결할 수 있습니
 
 | Tool | 설명 |
 |------|------|
-| `set_api_key` | OpenDART API 키를 세션에 설정 |
+| `set_api_key` | API 키 전달 방법 안내(키는 저장하지 않음 — URL `?opendart_key=` 또는 도구별 `api_key` 사용) |
 | `get_api_key_status` | API 키 설정 여부 확인 |
 
 ### 회사 검색 & 정보 (3개)

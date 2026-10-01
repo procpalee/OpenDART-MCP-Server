@@ -1,6 +1,6 @@
 import { createMcpHandler } from "mcp-handler";
 import { registerAllTools } from "@/lib/tools";
-import { setSessionApiKey } from "@/lib/opendart/client";
+import { runWithRequestApiKey } from "@/lib/opendart/client";
 
 const mcpHandler = createMcpHandler(
   (server) => {
@@ -19,10 +19,7 @@ const mcpHandler = createMcpHandler(
 async function handler(req: Request) {
   const url = new URL(req.url);
   const apiKey = url.searchParams.get("opendart_key");
-  if (apiKey) {
-    setSessionApiKey(apiKey);
-  }
-  return mcpHandler(req);
+  return runWithRequestApiKey(apiKey, () => mcpHandler(req));
 }
 
 // Without an explicit HEAD export, Next.js routes HEAD to the GET handler and

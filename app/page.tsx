@@ -29,7 +29,8 @@ export default function Home() {
       </pre>
       <p>
         이렇게 하면 대화에서 별도 설정 없이 바로 사용할 수 있습니다.
-        또는 대화 중 <code>set_api_key</code> 도구로도 설정할 수 있습니다.
+        키는 요청마다 따로 쓰이고 서버에 저장되지 않으므로, URL 에 넣지 않았다면
+        각 도구의 <code>api_key</code> 인자로 넘겨야 합니다.
       </p>
 
       <h2>MCP Endpoint</h2>
